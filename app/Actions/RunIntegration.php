@@ -427,9 +427,42 @@ class RunIntegration
             ->all();
 
         return new RecordMapper(
-            $integration->fieldMappings->map->toRule()->all(),
+            $integration->fieldMappings->map(fn ($m) => self::normalizeRule($m->toRule(), $integration))->all(),
             new Transforms(fn ($id) => $lookups[(string) $id] ?? null),
         );
+    }
+
+    /**
+     * Accept mappings written against the whole payload ("data.*.identifier"
+     * → "samples.*.sid") by stripping the configured list path and batch
+     * wrapper, so they read/write one record like everything else.
+     *
+     * @param  array<string, mixed>  $rule
+     * @return array<string, mixed>
+     */
+    public static function normalizeRule(array $rule, Integration $integration): array
+    {
+        $rule['source_field'] = self::stripPrefix($rule['source_field'] ?? null, $integration->is_bulk ? $integration->source_collection_path : null);
+        $rule['target_field'] = self::stripPrefix($rule['target_field'], $integration->target_wrapper_path);
+
+        return $rule;
+    }
+
+    public static function stripPrefix(?string $path, ?string $collection): ?string
+    {
+        if ($path === null || $path === '') {
+            return $path;
+        }
+
+        $prefixes = filled($collection) ? [$collection.'.*.', '*.'] : ['*.'];
+
+        foreach ($prefixes as $prefix) {
+            if (str_starts_with($path, $prefix)) {
+                return substr($path, strlen($prefix));
+            }
+        }
+
+        return $path;
     }
 
     /**

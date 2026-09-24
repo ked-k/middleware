@@ -45,19 +45,21 @@ class Lookup
 
         $key = $this->normalize((string) $value);
 
-        if (array_key_exists($key, $this->index)) {
-            if ($this->index[$key] === null) {
-                throw new MappingException("Lookup \"{$this->name}\" has an entry for \"{$value}\" but no target value set yet.");
-            }
-
+        if (array_key_exists($key, $this->index) && $this->index[$key] !== null) {
             return $this->index[$key];
         }
+
+        // Unknown value, or a known one whose target isn't filled in yet:
+        // both follow the table's "when no match" setting.
+        $known = array_key_exists($key, $this->index);
 
         return match ($this->fallback) {
             'pass' => $value,
             'null' => null,
             'default' => $this->fallbackValue,
-            default => throw new MappingException("Lookup \"{$this->name}\" has no entry for \"{$value}\"."),
+            default => throw new MappingException($known
+                ? "Lookup \"{$this->name}\" has an entry for \"{$value}\" but no target value set yet."
+                : "Lookup \"{$this->name}\" has no entry for \"{$value}\"."),
         };
     }
 

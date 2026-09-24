@@ -173,6 +173,31 @@ class Show extends Component
         return ValueMap::query()->orderBy('name')->pluck('name', 'id')->all();
     }
 
+    /**
+     * If existing mappings were written against the whole list
+     * ("data.*.x" → "samples.*.y") but list mode isn't configured to match,
+     * suggest the settings that would make them work.
+     *
+     * @return array{source: ?string, target: ?string}|null
+     */
+    #[Computed]
+    public function wildcardHint(): ?array
+    {
+        $prefix = fn (string $column) => $this->mappings
+            ->pluck($column)
+            ->filter(fn ($p) => is_string($p) && str_contains($p, '.*.'))
+            ->map(fn ($p) => strstr($p, '.*.', true))
+            ->countBy()->sortDesc()->keys()->first();
+
+        $source = $prefix('source_field');
+        $target = $prefix('target_field');
+
+        $sourceOk = $source === null || ($this->integration->is_bulk && $this->integration->source_collection_path === $source);
+        $targetOk = $target === null || $this->integration->target_wrapper_path === $target;
+
+        return $sourceOk && $targetOk ? null : ['source' => $source, 'target' => $target];
+    }
+
     #[Computed]
     public function nextRunAt(): ?Carbon
     {
@@ -293,9 +318,21 @@ class Show extends Component
             return;
         }
 
+        // Store paths relative to one record: "data.*.identifier" → "identifier".
+        $source = RunIntegration::stripPrefix($this->source_field ?: null, $this->integration->source_collection_path);
+        $target = RunIntegration::stripPrefix($this->target_field, $this->integration->target_wrapper_path);
+
+        foreach (['source_field' => $source, 'target_field' => $target] as $field => $path) {
+            if (str_contains((string) $path, '*')) {
+                $this->addError($field, __('Use a path within one record (e.g. "identifier", not "data.*.identifier"). Turn on "The source returns a list of records" under Records & delivery and set the list path / batch wrapper first.'));
+
+                return;
+            }
+        }
+
         $data = [
-            'source_field' => $this->source_field ?: null,
-            'target_field' => $this->target_field,
+            'source_field' => $source,
+            'target_field' => $target,
             'transforms' => $steps,
             'is_required' => $this->is_required,
             'skip_if_empty' => $this->skip_if_empty,
@@ -417,7 +454,7 @@ class Show extends Component
             'resend_on_change' => $this->resend_on_change,
         ]);
 
-        unset($this->sourceFieldSuggestions, $this->targetFieldSuggestions);
+        unset($this->sourceFieldSuggestions, $this->targetFieldSuggestions, $this->wildcardHint);
         Flux::toast(variant: 'success', text: __('Delivery settings saved.'));
     }
 
@@ -449,6 +486,30 @@ class Show extends Component
     // ---------------------------------------------------------------------
     // Preview, run, retry
     // ---------------------------------------------------------------------
+
+    /**
+     * Fill the Records & delivery form from the wildcard hint (not saved
+     * until the user clicks Save).
+     */
+    public function applyWildcardHint(): void
+    {
+        $hint = $this->wildcardHint;
+
+        if (! $hint) {
+            return;
+        }
+
+        if ($hint['source']) {
+            $this->is_bulk = true;
+            $this->source_collection_path = $hint['source'];
+        }
+
+        if ($hint['target']) {
+            $this->is_bulk = true;
+            $this->bulk_mode = 'single_request';
+            $this->target_wrapper_path = $hint['target'];
+        }
+    }
 
     public function openPreview(): void
     {

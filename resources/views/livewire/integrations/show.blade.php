@@ -90,6 +90,22 @@
             {{ __('Where the list of records is in the source response, how each record is identified (so it is only delivered once), and how records are sent to the target.') }}
         </flux:text>
 
+        @if ($hint = $this->wildcardHint)
+            <flux:callout variant="warning" icon="exclamation-triangle" class="mt-4">
+                <flux:callout.heading>{{ __('Your mappings use list paths, but list mode isn\'t set up to match') }}</flux:callout.heading>
+                <flux:callout.text>
+                    {{ __('Mappings like ":example" work on the whole response, so nothing is read. Set:', ['example' => ($hint['source'] ?? 'data').'.*.identifier']) }}
+                    @if ($hint['source']) {{ __('list path ":p"', ['p' => $hint['source']]) }}@endif
+                    @if ($hint['source'] && $hint['target']) · @endif
+                    @if ($hint['target']) {{ __('send in batches wrapped in ":p"', ['p' => $hint['target']]) }}@endif
+                    — {{ __('the existing mappings then work as-is.') }}
+                </flux:callout.text>
+                <x-slot name="actions">
+                    <flux:button size="sm" wire:click="applyWildcardHint">{{ __('Fill these in') }}</flux:button>
+                </x-slot>
+            </flux:callout>
+        @endif
+
         <form wire:submit="saveDeliverySettings" class="mt-4 space-y-5">
             <flux:switch wire:model.live="is_bulk" :label="__('The source returns a list of records')" />
 

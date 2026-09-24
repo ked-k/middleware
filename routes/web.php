@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\AuthProfiles\Index as AuthProfilesIndex;
+use App\Livewire\Dashboard;
 use App\Livewire\Connections\Index as ConnectionsIndex;
 use App\Livewire\Integrations\Index as IntegrationsIndex;
 use App\Livewire\Integrations\Show as IntegrationsShow;
@@ -12,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 Route::view('/', 'welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+    Route::livewire('dashboard', Dashboard::class)->name('dashboard');
 
     Route::livewire('systems', SystemsIndex::class)->name('systems.index');
     Route::livewire('systems/{system}', SystemsShow::class)->name('systems.show');

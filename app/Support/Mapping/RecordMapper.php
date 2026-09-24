@@ -31,6 +31,17 @@ class RecordMapper
         foreach ($this->rules as $rule) {
             $target = $rule['target_field'];
 
+            // A "*" means the mapping was written against the whole list
+            // (data.*.x) instead of one record — Arr::get can't read that, so
+            // the value would silently come out empty. Fail loudly instead.
+            foreach (['source_field', 'target_field'] as $side) {
+                if (str_contains((string) ($rule[$side] ?? ''), '*')) {
+                    $errors[] = "{$target}: \"{$rule[$side]}\" contains \"*\". Mappings work on one record at a time — turn on \"The source returns a list of records\" (list path e.g. \"data\"; batch wrapper e.g. \"samples\") and use paths like \"identifier\" → \"sid\".";
+
+                    continue 2;
+                }
+            }
+
             try {
                 $value = Transforms::read($rule['source_field'] ?? null, $record, $root);
                 $value = $this->transforms->run($rule['transforms'] ?? [], $value, $record, $root);

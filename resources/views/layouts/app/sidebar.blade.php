@@ -15,6 +15,18 @@
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
+
+                    <flux:sidebar.item icon="server" :href="route('systems.index')" :current="request()->routeIs('systems.*') || request()->routeIs('auth-profiles.*') || request()->routeIs('connections.*')" wire:navigate>
+                        {{ __('Systems') }}
+                    </flux:sidebar.item>
+
+                    <flux:sidebar.item icon="arrows-right-left" :href="route('integrations.index')" :current="request()->routeIs('integrations.*')" wire:navigate>
+                        {{ __('Integrations') }}
+                    </flux:sidebar.item>
+
+                    <flux:sidebar.item icon="table-cells" :href="route('value-maps.index')" :current="request()->routeIs('value-maps.*')" wire:navigate>
+                        {{ __('Lookup tables') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 

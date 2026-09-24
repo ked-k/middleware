@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    /*
+    | Outbound HTTP used by integrations. On Windows/WAMP, PHP often has no
+    | CA bundle, which makes every HTTPS call fail with cURL error 60. Point
+    | this at a cacert.pem (https://curl.se/ca/cacert.pem) to fix it for the
+    | app without touching php.ini. Never disable verification instead.
+    */
+    'http' => [
+        'ca_bundle' => env('HTTP_CA_BUNDLE'),
+    ],
+
 ];

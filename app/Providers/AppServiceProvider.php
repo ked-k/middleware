@@ -5,6 +5,7 @@ namespace App\Providers;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -24,6 +25,20 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configureHttpClient();
+    }
+
+    /**
+     * Apply a custom CA bundle to every outbound HTTP call (connection tests,
+     * integration runs, OAuth token requests) when one is configured.
+     */
+    protected function configureHttpClient(): void
+    {
+        $caBundle = config('services.http.ca_bundle');
+
+        if (filled($caBundle)) {
+            Http::globalOptions(['verify' => $caBundle]);
+        }
     }
 
     /**

@@ -39,9 +39,7 @@ class Show extends Component
 
     public ?Endpoint $deleting = null;
 
-    /**
-     * Set the page title once the system is known.
-     */
+
     #[Title('System')]
     public function mount(System $system): void
     {
@@ -54,9 +52,7 @@ class Show extends Component
         return $this->system->endpoints()->orderBy('name')->get();
     }
 
-    /**
-     * Open the modal to register a new endpoint.
-     */
+
     public function create(): void
     {
         $this->reset(['editingId', 'name', 'path', 'description', 'request_schema', 'response_schema']);
@@ -67,9 +63,7 @@ class Show extends Component
         Flux::modal('endpoint-form')->show();
     }
 
-    /**
-     * Open the modal pre-filled to edit an existing endpoint.
-     */
+
     public function edit(int $endpointId): void
     {
         $endpoint = $this->system->endpoints()->findOrFail($endpointId);
@@ -87,9 +81,7 @@ class Show extends Component
         Flux::modal('endpoint-form')->show();
     }
 
-    /**
-     * Persist the create/edit form.
-     */
+
     public function save(): void
     {
         $validated = $this->validate();
@@ -109,9 +101,7 @@ class Show extends Component
         Flux::modal('endpoint-form')->close();
     }
 
-    /**
-     * Ask for confirmation before deleting an endpoint.
-     */
+
     public function confirmDelete(int $endpointId): void
     {
         $this->deleting = $this->system->endpoints()->findOrFail($endpointId);
@@ -119,9 +109,7 @@ class Show extends Component
         Flux::modal('confirm-endpoint-deletion')->show();
     }
 
-    /**
-     * Delete the endpoint.
-     */
+
     public function delete(): void
     {
         $this->deleting?->delete();

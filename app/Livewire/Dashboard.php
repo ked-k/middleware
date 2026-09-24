@@ -14,10 +14,7 @@ use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-/**
- * Operational overview: run volume and outcomes over time, delivery totals,
- * per-integration health, and the latest problems to look at.
- */
+
 #[Title('Dashboard')]
 class Dashboard extends Component
 {

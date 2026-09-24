@@ -52,9 +52,7 @@ class Index extends Component
             ->get();
     }
 
-    /**
-     * Open the modal to register a new system.
-     */
+
     public function create(): void
     {
         $this->reset(['editingId', 'name', 'base_url', 'description']);
@@ -64,9 +62,6 @@ class Index extends Component
         Flux::modal('system-form')->show();
     }
 
-    /**
-     * Open the modal pre-filled to edit an existing system.
-     */
     public function edit(int $systemId): void
     {
         $system = System::findOrFail($systemId);
@@ -87,9 +82,7 @@ class Index extends Component
     //     $this->resetValidationAttributes();
     // }
 
-    /**
-     * Persist the create/edit form.
-     */
+
     public function save(): void
     {
         $validated = $this->validate();
@@ -108,9 +101,7 @@ class Index extends Component
         Flux::modal('system-form')->close();
     }
 
-    /**
-     * Ask for confirmation before deleting a system.
-     */
+
     public function confirmDelete(int $systemId): void
     {
         $this->deleting = System::findOrFail($systemId);
@@ -118,9 +109,7 @@ class Index extends Component
         Flux::modal('confirm-system-deletion')->show();
     }
 
-    /**
-     * Delete the system and its endpoints.
-     */
+
     public function delete(): void
     {
         $this->deleting?->delete();

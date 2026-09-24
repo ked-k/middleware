@@ -13,7 +13,7 @@ use App\Support\Mapping\RecordMapper;
 use App\Support\Mapping\Transforms;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
@@ -474,7 +474,7 @@ class RunIntegration
      * Stamp timing/status onto a run, roll the integration's last-run and
      * failure-streak state forward, and alert on a repeated failure streak.
      */
-    protected function finish(Integration $integration, IntegrationRun $run, Carbon $startedAt): IntegrationRun
+    protected function finish(Integration $integration, IntegrationRun $run, CarbonInterface $startedAt): IntegrationRun
     {
         $finishedAt = Date::now();
 
